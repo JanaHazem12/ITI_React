@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+  font-family: font1;
+  src: url(../public/assets/ModernHeritageDisplay-4neLW.otf);
+}
+@font-face {
+  font-family: font2;
+  src: url(../public/assets/RoastedBitter-DYR8d.ttf);
+}
+@font-face {
+  font-family: font3;
+  src: url(../public/assets/FastenDhectaDemoVersion-Zp8eJ.otf);
+}
+@import "tailwindcss";
+@plugin "daisyui"{
+  themes: light --default;
+}
+@theme{
+  --font-font1: font1, "sans-serif";
+  --font-font2: font2, "sans-serif";
+  --font-font3: font3, "sans-serif";
+}
