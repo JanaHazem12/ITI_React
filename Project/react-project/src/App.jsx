@@ -10,7 +10,7 @@ import Login from './assets/pages/login';
 import Register from './assets/pages/register';
 import EditBlog from './assets/pages/EditBlog';
 import AddBlog from './assets/pages/AddBlog';
-import TestPB from './assets/pages/TestPB';
+// import TestPB from './assets/pages/TestPB';
 import NotFound from './assets/components/NotFound';
 
 
@@ -30,7 +30,7 @@ function App() {
           <Route path='/add' element={<AddBlog/>}/>
           {/* edit by ID --> /edit/:id */}
           <Route path='/edit' element={<EditBlog/>}/>
-          <Route path='/test' element={<TestPB/>}/>
+          {/* <Route path='/test' element={<TestPB/>}/> */}
           <Route path='*' element={<NotFound/>}/>
           
       </Routes>
