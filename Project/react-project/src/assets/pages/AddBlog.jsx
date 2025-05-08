@@ -1,4 +1,20 @@
-import React from "react";
+import React, { useRef } from "react";
+import PocketBase from 'pocketbase';
+
+// try{
+//   const pb = new PocketBase('http://127.0.0.1:8090');
+//   const titleRef = useRef();
+//   const bodyRef = useRef();
+//   const imageRef = useRef();
+//   const confirmPassRef = useRef();
+// } catch(error){
+//   console.log('error connecting to database', error);
+// }
+
+// const handleSubmit = (e) => {
+//   e.preventDefault();
+// }
+
 
 export default function addBlog() {
   return (
@@ -18,6 +34,7 @@ export default function addBlog() {
                 Title
               </label>
               <input
+                
                 type="text"
                 id="titleID"
                 name="title"
