@@ -1,14 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import PocketBase from "pocketbase";
+import { useNavigate } from "react-router";
 
+export default function addBlog(){
 const [formData, setFormData] = useState({
-  title:"",
-  image:"",
-  body:""
-}
-);
+  title: "",
+  image: "",
+  body: "",
+});
 const [titleReq, setTitleReq] = useState("");
-const [imageReq, setImgReq] = useState("");
+const [imgReq, setImgReq] = useState("");
+const [imgRegex, setImgRegex] = useState("");
+const navigate = useNavigate();
 
 const handleChange = (e) => {
   setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,16 +19,44 @@ const handleChange = (e) => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+  setImgRegex("");
+  setImgReq("");
+  setTitleReq("");
+  let isValid = true;
 
+  if (formData.title.length == 0) {
+    setTitleReq("Title is required");
+    isValid = false;
+  }
+  if (formData.image.length == 0) {
+    setImgReq("Image is required");
+    setImgRegex("");
+    isValid = false;
+  }
 
-  try {
-    const record = await pb.collection("blogs").create();
-  } catch (err) {
-    console.log("error");
+  // regex for image URL
+  const imgRegex = /(https?:\/\/.*\.(?:png|jpg))/i;
+  if (!imgRegex.test(formData.image) && formData.image.length !== 0) {
+    setImgRegex("Please enter a valid image URL.");
+    setImgReq("");
+    isValid = false;
+  }
+
+  if (isValid) {
+    try {
+      const pb = new PocketBase("http://127.0.0.1:8090");
+      const record = await pb.collection("blogs").create({
+        title: formData.title,
+        body: formData.body,
+        image: formData.image,
+      });
+      navigate("/");
+    } catch (err) {
+      alert("Failed to add blog!");
+    }
   }
 };
 
-export default function addBlog() {
   return (
     <>
       <div className="flex items-center justify-center font-font3 text-8xl text-purple-500 py-60">
@@ -51,6 +82,9 @@ export default function addBlog() {
                 autocomplete="off"
               />
             </div>
+            {titleReq && (
+              <p className="text-red-600 text-left text-sm">{titleReq}</p>
+            )}
             <div class="flex flex-col mb-3">
               <label htmlFor="body" className="text-purple-500">
                 Body
@@ -80,6 +114,12 @@ export default function addBlog() {
                 autocomplete="off"
               />
             </div>
+            {imgRegex && (
+              <p className="text-red-600 text-left text-sm">{imgRegex}</p>
+            )}
+            {imgReq && (
+              <p className="text-red-600 text-left text-sm">{imgReq}</p>
+            )}
           </div>
           <div class="w-full pt-3">
             <button
