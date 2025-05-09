@@ -6,7 +6,7 @@ import {
   faMessage,
   faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import PocketBase from "pocketbase";
 
 export default function register() {
@@ -16,13 +16,15 @@ export default function register() {
     password: "",
     confirmPass: "",
   });
-  const [confirmPassError, setconfirmPassError] = useState("");
   const [usernameError, setUsernameError] = useState("");
   const [passError, setPassError] = useState("");
   const [passReqError, setpassReqError] = useState("");
+  const [confirmPassError, setconfirmPassError] = useState("");
   const [confirmPassReqError, setconfirmPassReqError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [emailReqError, setemailReqError] = useState("");
+  const [isRegistered, setisRegistered] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -31,62 +33,89 @@ export default function register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setUsernameError("");
+    setPassError("");
+    setpassReqError("");
+    setconfirmPassError("");
+    setconfirmPassReqError("");
+    setEmailError("");
+    setemailReqError("");
+    let isValid = true;
     // REQUIRED FIELDS
-    if (formData.username === "") {
+    if (formData.username.length === 0) {
       setUsernameError("Username is required.");
+      isValid = false;
     }
 
     if (formData.confirmPass === "") {
       setconfirmPassReqError("Confirm password is required.");
+      isValid = false;
     }
+
+    const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (formData.email.length == 0) {
       setemailReqError("Email is required.");
       setEmailError("");
+      isValid = false;
+    }
+
+    // validation for email format
+    if (!regex.test(formData.email) && formData.email.length > 0) {
+      // alert("Please enter a valid email address (e.g., user@example.com)");
+      setEmailError("Please enter a valid email address.");
+      setemailReqError("");
+      isValid = false;
     }
 
     if (formData.password === "") {
       setpassReqError("Password is required.");
+      isValid = false;
     }
 
     // validation for password length
     if (formData.password.length < 8 && formData.password.length > 0) {
-      // alert("Password must be at least 8 characters long");
       setPassError("Password must be at least 8 characters long");
-      return;
+      isValid = false;
     }
     // validation for password/confirmPass if they DON'T match
-    if (formData.password !== formData.confirmPass) {
-      // alert("Passwords don't match!");
+    if (formData.password !== formData.confirmPass && formData.confirmPass.length >= 8) {
       setconfirmPassError("Passwords don't match!");
-      return;
-    }
-    // validation for email format
-    const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    if (!regex.test(formData.email)) {
-      // alert("Please enter a valid email address (e.g., user@example.com)");
-      setEmailError("Please enter a valid email address.");
-      setemailReqError("");
-      return;
+      isValid = false;
     }
 
     // CHECK IF EMAIL IS ALREADY IN DB --> ALERT('EMAIL ALREADY REGISTERED')
-    try {
-      const pb = new PocketBase("http://127.0.0.1:8090");
-      const record = pb.collection("users").create({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        confirmPass: formData.confirmPass,
-      });
-      const findMail = pb
-        .collection("users")
-        .getFirstListItem(`email="${formData.email}"`);
-      console.log(findMail);
-      alert("User registered successfully !");
-    } catch (err) {
-      alert("Registration failed");
+    let emailExists = false;
+    if (isValid) {
+      try {
+        const pb = new PocketBase("http://127.0.0.1:8090");
+        const emailFound = await pb
+          .collection("users")
+          .getFirstListItem(`email="${formData.email}"`, {
+            expand: "relField1,relField2.subRelField",
+          });
+        emailExists = true; 
+      } catch (err) {
+          emailExists = false;
+      }
+    }
+    if(emailExists){
+      setisRegistered("Email already exists.");
+    }
+    if (isValid && !emailExists) {
+      try {
+        const pb = new PocketBase("http://127.0.0.1:8090");
+        const record = await pb.collection("users").create({
+          username: formData.username,
+          email: formData.email.toLowerCase(),
+          password: formData.password,
+          confirmPass: formData.confirmPass,
+        });
+        navigate("/");
+      } catch (err) {
+        alert("Registration failed");
+      }
     }
   };
 
@@ -162,6 +191,11 @@ export default function register() {
                       className="outline-none border-none focus:ring-0"
                     />
                   </div>
+                  {isRegistered && (
+                    <p className="text-red-600 text-left text-sm">
+                      {isRegistered}
+                    </p>
+                  )}
                   {emailReqError && (
                     <p className="text-red-600 text-left text-sm">
                       {emailReqError}
