@@ -1,20 +1,29 @@
-import React, { useRef } from "react";
-import PocketBase from 'pocketbase';
+import React, { useRef, useState } from "react";
+import PocketBase from "pocketbase";
 
-// try{
-//   const pb = new PocketBase('http://127.0.0.1:8090');
-//   const titleRef = useRef();
-//   const bodyRef = useRef();
-//   const imageRef = useRef();
-//   const confirmPassRef = useRef();
-// } catch(error){
-//   console.log('error connecting to database', error);
-// }
+const [formData, setFormData] = useState({
+  title:"",
+  image:"",
+  body:""
+}
+);
+const [titleReq, setTitleReq] = useState("");
+const [imageReq, setImgReq] = useState("");
 
-// const handleSubmit = (e) => {
-//   e.preventDefault();
-// }
+const handleChange = (e) => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
+};
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+
+  try {
+    const record = await pb.collection("blogs").create();
+  } catch (err) {
+    console.log("error");
+  }
+};
 
 export default function addBlog() {
   return (
@@ -24,8 +33,7 @@ export default function addBlog() {
       </div>
       <div className="flex items-center justify-center relative bottom-50">
         <form
-          action="#"
-          method="POST"
+          onSubmit={handleSubmit}
           class="w-full md:w-1/2 border border-purple-500 p-6 bg-white"
         >
           <div>
@@ -34,7 +42,8 @@ export default function addBlog() {
                 Title
               </label>
               <input
-                
+                value={formData.title}
+                onChange={handleChange}
                 type="text"
                 id="titleID"
                 name="title"
@@ -47,6 +56,8 @@ export default function addBlog() {
                 Body
               </label>
               <textarea
+                value={formData.body}
+                onChange={handleChange}
                 rows="4"
                 id="bodyInp"
                 name="body"
@@ -59,6 +70,8 @@ export default function addBlog() {
                 Image
               </label>
               <input
+                value={formData.image}
+                onChange={handleChange}
                 type="text"
                 // REGEX FOR IMAGE URL
                 id="imageID"
