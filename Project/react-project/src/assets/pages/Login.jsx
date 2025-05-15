@@ -7,15 +7,108 @@ import {
   faTractor,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import PocketBase from "pocketbase";
 
 export default function Login() {
-  // CHECK IF USERNAME EXISTS IN 'users' COLLECTION
-  // IF USERNAME EXISTS, CHECK IF PASSWORD MATCHES
+  // CHECK IF USERNAME EXISTS IN 'users' COLLECTION - DONE
+  // IF USERNAME EXISTS, CHECK IF PASSWORD MATCHES - DONE
   // IF PASSWORD MATCHES, ADD USER TO 'currently_logged_in' COLLECTION
   // IF PASSWORD DOESN'T MATCH, SHOW ERROR MESSAGE
   // IF USERNAME DOESN'T EXIST, SHOW ERROR MESSAGE
-  const [username, setUsername] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+  const [isUsernameFound, setUsername] = useState({
+    errormsg: "",
+    usernameExists: false,
+  });
+  const [requiredFields, setRequiredFields] = useState({
+    requiredmsg: "",
+    usernamereq: false,
+    passwordreq: false,
+  });
+  const [isCorrect, setCorrectPass] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUsername({
+      errormsg: "",
+      usernameExists: true,
+    });
+    setRequiredFields({
+      requiredmsg: "",
+      usernamereq: false,
+      passwordreq: false,
+    });
+    setCorrectPass("");
+    if (formData.username.length === 0) {
+      setRequiredFields((prev) => ({
+        ...prev,
+        requiredmsg: "Username is required",
+        usernamereq: true,
+      }));
+    }
+    if (formData.password.length === 0) {
+      setRequiredFields((prev) => ({
+        ...prev,
+        requiredmsg: "Password is required",
+        passwordreq: true,
+      }));
+    }
+    try {
+      const pb = new PocketBase("http://127.0.0.1:8090");
+      try {
+        const usernameFound = await pb
+          .collection("users")
+          .getFirstListItem(`username="${formData.username}"`, {
+            expand: "relField1,relField2.subRelField",
+          });
+        setUsername((prev) => ({
+          ...prev,
+          usernameExists: false,
+        }));
+        console.log("USERNAME FOUND", usernameFound);
+        console.log("isFound", isUsernameFound.usernameExists);
+      } catch (err) {
+        setUsername((prev) => ({
+          ...prev,
+          errormsg: "Username doesn't exist.",
+          usernameExists: true,
+        }));
+        console.log("USERNAME NOT FOUND");
+        return;
+      }
+      console.log("USERNAME", formData.username);
+      if (isUsernameFound.usernameExists === false) {
+        // CHECK IF PASSWORD TO THIS SPECIFIC USERNAME IS CORRECT
+        // CONSOLE LOG RECORD OF USER FOUND IN DB
+        const userDB = await pb
+          .collection("users")
+          .getFirstListItem(`username="${formData.username}"`, {
+            expand: "relField1,relField2.subRelField",
+          });
+        // GET THE PASSWORD OF THIS RECORD AND COMPARE IT WITH formData.password - DONE
+        const passwordinDB = userDB.password;
+        if (formData.password != passwordinDB) {
+          setCorrectPass("Incorrect password.");
+        } else {
+          // OPEN HOMEPAGE
+          navigate("/");
+        }
+      }
+    } catch (err) {
+      console.log("Error connecting to DB.", err);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center p-4 min-h-screen">
@@ -27,7 +120,7 @@ export default function Login() {
               Hey! Good to see you again.
             </p>
 
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <div className="flex bg-purple-200 rounded-xl w-full h-10 items-center px-3">
                   <FontAwesomeIcon
@@ -36,10 +129,23 @@ export default function Login() {
                   />
                   <input
                     type="text"
+                    value={formData.username}
+                    onChange={handleChange}
+                    name="username"
                     placeholder="Username"
                     className="bg-transparent outline-none border-none focus:ring-0"
                   />
                 </div>
+                {requiredFields.usernamereq && (
+                  <p className="text-red-600 text-left text-sm">
+                    Username is required
+                  </p>
+                )}
+                {isUsernameFound.usernameExists && (
+                  <p className="text-red-600 text-left text-sm">
+                    {isUsernameFound.errormsg}
+                  </p>
+                )}
               </div>
 
               <div className="mb-6">
@@ -50,10 +156,21 @@ export default function Login() {
                   />
                   <input
                     type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     placeholder="Password"
                     className="bg-transparent outline-none border-none focus:ring-0"
                   />
                 </div>
+                {requiredFields.passwordreq && (
+                  <p className="text-red-600 text-left text-sm">
+                    Password is required
+                  </p>
+                )}
+                {isCorrect && (
+                  <p className="text-red-600 text-left text-sm">{isCorrect}</p>
+                )}
               </div>
 
               <button

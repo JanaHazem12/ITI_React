@@ -110,11 +110,11 @@ export default function Register() {
           .getFirstListItem(`email="${formData.email}"`, {
             expand: "relField1,relField2.subRelField",
           });
-          setisRegistered((prev) => ({
-            ...prev,
-            isRegistered: "Email already exists",
-            emailExists: true,
-          }));
+        setisRegistered((prev) => ({
+          ...prev,
+          isRegistered: "Email already exists",
+          emailExists: true,
+        }));
         console.log("EMAIL FOUND: ", emailFound);
         return;
       } catch (err) {
@@ -144,25 +144,27 @@ export default function Register() {
           usernameExists: false,
         }));
       }
-    
-    if (isValid && !isRegistered.emailExists && !isRegistered.usernameExists) {
-      try {
-        const record = await pb.collection("users").create({
-          username: formData.username,
-          email: formData.email.toLowerCase(),
-          password: formData.password,
-          passwordConfirm: formData.confirmPass,
-        });
-        navigate("/");
-      } catch (err) {
-        console.error("Registration failed:", err);
+
+      if (
+        isValid &&
+        !isRegistered.emailExists &&
+        !isRegistered.usernameExists
+      ) {
+        try {
+          const record = await pb.collection("users").create({
+            username: formData.username,
+            email: formData.email.toLowerCase(),
+            password: formData.password,
+            passwordConfirm: formData.confirmPass,
+          });
+        } catch (err) {
+          console.error("Registration failed:", err);
+        }
       }
-    }
-  }
-    catch(err){
+    } catch (err) {
       console.log("Error connecting to DB.");
     }
-  }
+  };
 
   return (
     <>
