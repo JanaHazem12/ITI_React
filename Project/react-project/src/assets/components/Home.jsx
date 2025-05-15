@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import PocketBase from "pocketbase";
 
 export default function Home() {
+  // SHOW EDIT/DELETE BUTTONS FOR BLOGS CREATED BY THE USER IN THE 'currently_logged_in' COLLECTION
   const [record, setRecord] = useState([]);
   useEffect(() => {
     const fetchData = async () => {

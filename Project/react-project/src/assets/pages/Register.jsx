@@ -9,7 +9,7 @@ import {
 import { Link, useNavigate } from "react-router";
 import PocketBase from "pocketbase";
 
-export default function register() {
+export default function Register() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -23,7 +23,12 @@ export default function register() {
   const [confirmPassReqError, setconfirmPassReqError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [emailReqError, setemailReqError] = useState("");
-  const [isRegistered, setisRegistered] = useState("");
+  // const [isRegistered, setisRegistered] = useState("");
+  const [isRegistered, setisRegistered] = useState({
+    isRegistered: "",
+    emailExists: false,
+    usernameExists: false,
+  });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -32,6 +37,9 @@ export default function register() {
       [e.target.name]: e.target.value,
     });
   };
+
+  // let emailExists = false;
+  // let usernameExists = false;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +50,11 @@ export default function register() {
     setconfirmPassReqError("");
     setEmailError("");
     setemailReqError("");
+    setisRegistered({
+      isRegistered: "",
+      emailExists: false,
+      usernameExists: false,
+    });
     let isValid = true;
     // REQUIRED FIELDS
     if (formData.username.length === 0) {
@@ -60,9 +73,8 @@ export default function register() {
       setEmailError("");
       isValid = false;
     }
-
     // validation for email format
-    if (!regex.test(formData.email) && formData.email.length > 0) {
+    else if (!regex.test(formData.email) && formData.email.length > 0) {
       // alert("Please enter a valid email address (e.g., user@example.com)");
       setEmailError("Please enter a valid email address.");
       setemailReqError("");
@@ -75,71 +87,82 @@ export default function register() {
     }
 
     // validation for password length
-    if (formData.password.length < 8 && formData.password.length > 0) {
+    else if (formData.password.length < 8 && formData.password.length > 0) {
       setPassError("Password must be at least 8 characters long");
       isValid = false;
     }
     // validation for password/confirmPass if they DON'T match
-    if (formData.password !== formData.confirmPass && formData.confirmPass.length >= 8) {
+    if (
+      formData.password !== formData.confirmPass &&
+      formData.confirmPass.length >= 0
+    ) {
       setconfirmPassError("Passwords don't match!");
       isValid = false;
     }
 
-    // CHECK IF EMAIL IS ALREADY IN DB --> ALERT('EMAIL ALREADY REGISTERED')
-    let emailExists = false;
-    if (isValid) {
+    // CHECK IF EMAI/USERNAME IS ALREADY IN DB
+    if (!isValid) return;
+    try {
+      const pb = new PocketBase("http://127.0.0.1:8090");
       try {
-        const pb = new PocketBase("http://127.0.0.1:8090");
         const emailFound = await pb
           .collection("users")
           .getFirstListItem(`email="${formData.email}"`, {
             expand: "relField1,relField2.subRelField",
           });
-        emailExists = true; 
+          setisRegistered((prev) => ({
+            ...prev,
+            isRegistered: "Email already exists",
+            emailExists: true,
+          }));
+        console.log("EMAIL FOUND: ", emailFound);
+        return;
       } catch (err) {
-          emailExists = false;
+        setisRegistered((prev) => ({
+          ...prev,
+          isRegistered: prev.usernameExists ? "Username already exists" : "",
+          emailExists: false,
+        }));
       }
-    }
-    if(emailExists){
-      setisRegistered("Email already exists.");
-    }
-    if (isValid && !emailExists) {
       try {
-        const pb = new PocketBase("http://127.0.0.1:8090");
+        const usernameFound = await pb
+          .collection("users")
+          .getFirstListItem(`username="${formData.username}"`, {
+            expand: "relField1,relField2.subRelField",
+          });
+        setisRegistered((prev) => ({
+          ...prev,
+          isRegistered: "Username already exists",
+          usernameExists: true,
+        }));
+        console.log("USERNAME FOUND: ", usernameFound);
+        return;
+      } catch (err) {
+        setisRegistered((prev) => ({
+          ...prev,
+          isRegistered: prev.emailExists ? "Email already exists" : "",
+          usernameExists: false,
+        }));
+      }
+    
+    if (isValid && !isRegistered.emailExists && !isRegistered.usernameExists) {
+      try {
         const record = await pb.collection("users").create({
           username: formData.username,
           email: formData.email.toLowerCase(),
           password: formData.password,
-          confirmPass: formData.confirmPass,
+          passwordConfirm: formData.confirmPass,
         });
         navigate("/");
       } catch (err) {
-        alert("Registration failed");
+        console.error("Registration failed:", err);
       }
     }
-  };
-
-  // why useEffect is NOT working ?
-  // useEffect(() => {
-  //     const addToDB = async () => {
-  //     try {
-  //       const pb = new PocketBase('http://127.0.0.1:8090');
-  //       // const record = await pb.collection('users').create(formData);
-  //       const record = await pb.collection('users').create({
-  //         username: formData.username,
-  //         email: formData.email,
-  //         password: formData.password,
-  //         confirmPass: formData.confirmPass
-  //       });
-  //       console.log('Registration successful:', record);
-  //       await pb.collection('users').authWithPassword(formData.email, formData.password);
-  //       setFormData(record);
-  //     } catch(err){
-  //       console.log('error', err);
-  //     }
-  //   }
-  //   addToDB();
-  // },[]);
+  }
+    catch(err){
+      console.log("Error connecting to DB.");
+    }
+  }
 
   return (
     <>
@@ -175,6 +198,11 @@ export default function register() {
                       {usernameError}
                     </p>
                   )}
+                  {isRegistered.usernameExists && (
+                    <p className="text-red-600 text-left text-sm">
+                      {isRegistered.isRegistered}
+                    </p>
+                  )}
                 </div>
                 <div className="mb-4">
                   <div className="flex bg-purple-200 rounded-xl w-full h-10 items-center px-3">
@@ -191,9 +219,15 @@ export default function register() {
                       className="outline-none border-none focus:ring-0"
                     />
                   </div>
-                  {isRegistered && (
+                  {/* {isRegistered && (
                     <p className="text-red-600 text-left text-sm">
                       {isRegistered}
+                    </p>
+                  )} */}
+                  {isRegistered.emailExists && (
+                    <p className="text-red-600 text-left text-sm">
+                      {/* {isRegistered.isRegistered} */}
+                      Email already exists.
                     </p>
                   )}
                   {emailReqError && (

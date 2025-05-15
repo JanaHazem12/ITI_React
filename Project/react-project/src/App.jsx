@@ -21,7 +21,7 @@ function App() {
 
   return (
     <>
-    <BrowserRouter>
+    <BrowserRouter suppressHydrationWarning={true}>
     <NavBar></NavBar>
       <Routes>
           <Route path='/' element={<Home/>}/>

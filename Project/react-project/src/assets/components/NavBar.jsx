@@ -7,8 +7,8 @@ export default function NavBar() {
         PixelBlog
       </span>
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl hover:bg-purple-600 hover:text-white float-start active:scale-95 transition-transform underline">
-          <NavLink
+        <div className="btn btn-ghost text-xl hover:bg-purple-600 hover:text-white float-start active:scale-95 transition-transform underline">
+          <NavLink suppressHydrationWarning={true}
             className={({ isActive }) =>
               isActive ? "flex items-center gap-2" : "flex items-center gap-2"
             }
@@ -30,7 +30,7 @@ export default function NavBar() {
             </svg>
             Home
           </NavLink>
-        </a>
+        </div>
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
