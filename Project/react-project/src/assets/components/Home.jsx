@@ -170,20 +170,34 @@ export default function Home() {
               <div className="font-light font-serif text-[18px] text-gray-600">
                 {rec.title.toUpperCase()}
               </div>
-              <div className="flex flex-row gap-2 items-center justify-center">
-                <div className="text-sm">
+              {/* <div className="flex flex-row gap-2 items-center justify-center"> */}
+                {/* <div className="text-sm">
                   {new Date(rec.created).toLocaleString()}
-                </div>
-                {blogCreator[rec.id] && (
-                  <div className="">
-                    POSTED BY: {blogCreator[rec.id]}
+                </div> */}
+                {/* {blogCreator[rec.id] && (
+                  <div className="text-red-400 font-bold">
+                    By: {blogCreator[rec.id]}
                   </div>
                 )}
-              </div>
-              <div className="text-gray-700 font-semibold text-left px-4">
+              </div> */}
+              <div className="text-gray-700 font-light text-left px-4 py-4">
                 {rec.body}
               </div>
             </div>
+            <hr className="text-gray-400"></hr>
+            <div className="text-sm">
+                  {new Date(rec.created).toLocaleString()}
+                </div>
+                <div className="flex flex-row gap-2 items-center justify-center">
+                {/* <div className="text-sm">
+                  {new Date(rec.created).toLocaleString()}
+                </div> */}
+                {blogCreator[rec.id] && (
+                  <div className="text-red-400 font-bold">
+                    By: {blogCreator[rec.id]}
+                  </div>
+                )}
+              </div>
             <div className="float-end align-text-bottom">
               {/* <Link to={`/edit/${rec.id}`}> */}
               {rec.creator === authID && (
@@ -223,4 +237,6 @@ export default function Home() {
 
 
 // TODO:
-// LINE EPILIPSES ...
+// LINE EPILIPSES ... in rec.body
+// refresh automatically when updating/deleting
+// BLOG DESIGN
