@@ -156,9 +156,11 @@ export default function Register() {
             email: formData.email.toLowerCase(),
             password: formData.password,
             passwordConfirm: formData.confirmPass,
+            emailVisibility: true,
           });
+          navigate("/login");
         } catch (err) {
-          console.error("Registration failed:", err);
+          console.error("Registration failed:", err.data);
         }
       }
     } catch (err) {

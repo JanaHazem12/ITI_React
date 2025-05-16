@@ -8,7 +8,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router";
-import PocketBase from "pocketbase";
+import PocketBase, { ClientResponseError } from "pocketbase";
 
 export default function Login() {
   // CHECK IF USERNAME EXISTS IN 'users' COLLECTION - DONE
@@ -20,16 +20,15 @@ export default function Login() {
     username: "",
     password: "",
   });
-  const [isUsernameFound, setUsername] = useState({
+  const [isEmailFound, setEmail] = useState({
     errormsg: "",
-    usernameExists: false,
+    emailExists: false,
   });
   const [requiredFields, setRequiredFields] = useState({
     requiredmsg: "",
     usernamereq: false,
     passwordreq: false,
   });
-  const [isCorrect, setCorrectPass] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -40,20 +39,19 @@ export default function Login() {
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setUsername({
+    setEmail({
       errormsg: "",
-      usernameExists: true,
+      emailExists: false,
     });
     setRequiredFields({
       requiredmsg: "",
       usernamereq: false,
       passwordreq: false,
     });
-    setCorrectPass("");
     if (formData.username.length === 0) {
       setRequiredFields((prev) => ({
         ...prev,
-        requiredmsg: "Username is required",
+        requiredmsg: "",
         usernamereq: true,
       }));
     }
@@ -64,49 +62,39 @@ export default function Login() {
         passwordreq: true,
       }));
     }
+
     try {
       const pb = new PocketBase("http://127.0.0.1:8090");
-      try {
-        const usernameFound = await pb
-          .collection("users")
-          .getFirstListItem(`username="${formData.username}"`, {
-            expand: "relField1,relField2.subRelField",
-          });
-        setUsername((prev) => ({
-          ...prev,
-          usernameExists: false,
-        }));
-        console.log("USERNAME FOUND", usernameFound);
-        console.log("isFound", isUsernameFound.usernameExists);
-      } catch (err) {
-        setUsername((prev) => ({
-          ...prev,
-          errormsg: "Username doesn't exist.",
-          usernameExists: true,
-        }));
-        console.log("USERNAME NOT FOUND");
-        return;
-      }
-      console.log("USERNAME", formData.username);
-      if (isUsernameFound.usernameExists === false) {
-        // CHECK IF PASSWORD TO THIS SPECIFIC USERNAME IS CORRECT
-        // CONSOLE LOG RECORD OF USER FOUND IN DB
-        const userDB = await pb
-          .collection("users")
-          .getFirstListItem(`username="${formData.username}"`, {
-            expand: "relField1,relField2.subRelField",
-          });
-        // GET THE PASSWORD OF THIS RECORD AND COMPARE IT WITH formData.password - DONE
-        const passwordinDB = userDB.password;
-        if (formData.password != passwordinDB) {
-          setCorrectPass("Incorrect password.");
-        } else {
-          // OPEN HOMEPAGE
-          navigate("/");
+      const authData = await pb
+        .collection("users")
+        .authWithPassword(formData.username, formData.password);
+      setEmail((prev) => ({ ...prev, errormsg: "", emailExists: true }));
+      console.log("AUTH DATA", authData);
+      navigate("/")
+    } catch (err) {
+      if (err instanceof ClientResponseError && err.status === 400) {
+        try {
+          const pb = new PocketBase("http://127.0.0.1:8090");
+          // check if email exists
+          const isEmailFound = await pb
+            .collection("users")
+            .getFirstListItem(`email="${formData.username}"`);
+          setEmail((prev) => ({
+            ...prev,
+            errormsg: "Incorrect password",
+            emailExists: true,
+          }));
+          console.log("Found", isEmailFound);
+        } catch (lookupErr) {
+          // email doesn't exist
+          setEmail((prev) => ({
+            ...prev,
+            errormsg: "Email doesn't exist",
+            emailExists: false,
+          }));
+          console.log("Not Found");
         }
       }
-    } catch (err) {
-      console.log("Error connecting to DB.", err);
     }
   };
 
@@ -138,12 +126,12 @@ export default function Login() {
                 </div>
                 {requiredFields.usernamereq && (
                   <p className="text-red-600 text-left text-sm">
-                    Username is required
+                    Email is required.
                   </p>
                 )}
-                {isUsernameFound.usernameExists && (
+                {!isEmailFound.emailExists && (
                   <p className="text-red-600 text-left text-sm">
-                    {isUsernameFound.errormsg}
+                    {isEmailFound.errormsg}
                   </p>
                 )}
               </div>
@@ -168,8 +156,10 @@ export default function Login() {
                     Password is required
                   </p>
                 )}
-                {isCorrect && (
-                  <p className="text-red-600 text-left text-sm">{isCorrect}</p>
+                {isEmailFound.emailExists && (
+                  <p className="text-red-600 text-left text-sm">
+                    {isEmailFound.errormsg}
+                  </p>
                 )}
               </div>
 

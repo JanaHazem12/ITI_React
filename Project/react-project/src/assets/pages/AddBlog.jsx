@@ -2,60 +2,70 @@ import React, { useState } from "react";
 import PocketBase from "pocketbase";
 import { useNavigate } from "react-router";
 
-export default function addBlog(){
-const [formData, setFormData] = useState({
-  title: "",
-  image: "",
-  body: "",
-});
-const [titleReq, setTitleReq] = useState("");
-const [imgReq, setImgReq] = useState("");
-const [imgRegex, setImgRegex] = useState("");
-const navigate = useNavigate();
+export default function addBlog() {
+  // const pb = new PocketBase("http://127.0.0.1:8090");
+  // const obj = pb.authStore.record;
+  // console.log(obj);
+  const pb = new PocketBase("http://127.0.0.1:8090");
+  const [formData, setFormData] = useState({
+    title: "",
+    image: "",
+    body: "",
+    creator: "",
+  });
+  const [titleReq, setTitleReq] = useState("");
+  const [imgReq, setImgReq] = useState("");
+  const [imgRegex, setImgRegex] = useState("");
+  const navigate = useNavigate();
 
-const handleChange = (e) => {
-  setFormData({ ...formData, [e.target.name]: e.target.value });
-};
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setImgRegex("");
-  setImgReq("");
-  setTitleReq("");
-  let isValid = true;
-
-  if (formData.title.length == 0) {
-    setTitleReq("Title is required");
-    isValid = false;
-  }
-  if (formData.image.length == 0) {
-    setImgReq("Image is required");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setImgRegex("");
-    isValid = false;
-  }
-
-  // regex for image URL
-  const imgRegex = /(https?:\/\/.*\.(?:png|jpg))/i;
-  if (!imgRegex.test(formData.image) && formData.image.length !== 0) {
-    setImgRegex("Please enter a valid image URL.");
     setImgReq("");
-    isValid = false;
-  }
+    setTitleReq("");
+    let isValid = true;
 
-  if (isValid) {
-    try {
-      const pb = new PocketBase("http://127.0.0.1:8090");
-      const record = await pb.collection("blogs").create({
-        title: formData.title,
-        body: formData.body,
-        image: formData.image,
-      });
-      navigate("/");
-    } catch (err) {
-      alert("Failed to add blog!");
+    if (formData.title.length == 0) {
+      setTitleReq("Title is required");
+      isValid = false;
     }
-  }
-};
+    if (formData.image.length == 0) {
+      setImgReq("Image is required");
+      setImgRegex("");
+      isValid = false;
+    }
+
+    // regex for image URL
+    const imgRegex = /(https?:\/\/.*\.(?:png|jpg))/i;
+    if (!imgRegex.test(formData.image) && formData.image.length !== 0) {
+      setImgRegex("Please enter a valid image URL.");
+      setImgReq("");
+      isValid = false;
+    }
+
+    if (isValid) {
+      try {
+        const pb = new PocketBase("http://127.0.0.1:8090");
+        const creator_id = pb.authStore.record.id
+        console.log("creator_id",creator_id);
+        const record = await pb.collection("blogs").create({
+          title: formData.title,
+          body: formData.body,
+          image: formData.image,
+          creator: creator_id,
+        });
+        navigate("/");
+      } catch (err) {
+        console.error("Status:", err.status); // HTTP status code
+        console.error("Data:", err.data); // Response data
+        console.error("Original Error:", err.originalError); // Underlying error
+      }
+    }
+  };
 
   return (
     <>
