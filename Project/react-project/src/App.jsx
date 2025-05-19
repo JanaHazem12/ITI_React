@@ -10,17 +10,14 @@ import Login from "./assets/pages/Login";
 import Register from "./assets/pages/Register";
 import EditBlog from "./assets/pages/EditBlog";
 import AddBlog from "./assets/pages/AddBlog";
-// import TestPB from './assets/pages/TestPB';
 import NotFound from "./assets/components/NotFound";
 
 // ALL THE LOGIC FOR THE WHOLE APP IS HERE AND PASSED TO THE OTHER COMPONENTS //
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
-      <BrowserRouter suppressHydrationWarning={true}>
+      <BrowserRouter>
         <NavBar></NavBar>
         <Routes>
           <Route path="/" element={<Home />} />

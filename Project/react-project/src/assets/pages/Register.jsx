@@ -7,7 +7,8 @@ import {
   faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router";
-import PocketBase from "pocketbase";
+// import PocketBase from "pocketbase";
+import pb from "../../pb"
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -103,7 +104,7 @@ export default function Register() {
     // CHECK IF EMAI/USERNAME IS ALREADY IN DB
     if (!isValid) return;
     try {
-      const pb = new PocketBase("http://127.0.0.1:8090");
+      // const pb = new PocketBase("http://127.0.0.1:8090");
       try {
         const emailFound = await pb
           .collection("users")

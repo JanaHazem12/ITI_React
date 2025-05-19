@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import PocketBase from "pocketbase";
 import { useNavigate } from "react-router";
+import pb from "../../pb"
 
 export default function addBlog() {
-  // const pb = new PocketBase("http://127.0.0.1:8090");
-  // const obj = pb.authStore.record;
-  // console.log(obj);
-  const pb = new PocketBase("http://127.0.0.1:8090");
   const [formData, setFormData] = useState({
     title: "",
     image: "",
@@ -49,7 +46,7 @@ export default function addBlog() {
 
     if (isValid) {
       try {
-        const pb = new PocketBase("http://127.0.0.1:8090");
+        // const pb = new PocketBase("http://127.0.0.1:8090");
         const creator_id = pb.authStore.record.id
         console.log("creator_id",creator_id);
         const record = await pb.collection("blogs").create({

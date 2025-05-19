@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
-import PocketBase from "pocketbase";
+// import PocketBase from "pocketbase";
+import pb from "../../pb"
+
 
 export default function EditBlog() {
   const { id } = useParams();
@@ -37,7 +39,7 @@ export default function EditBlog() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const pb = new PocketBase("http://127.0.0.1:8090");
+      // const pb = new PocketBase("http://127.0.0.1:8090");
       const updateBlog = await pb.collection("blogs").update(id, formData)
     } catch (err) {
       console.log("ERROR: ", err);

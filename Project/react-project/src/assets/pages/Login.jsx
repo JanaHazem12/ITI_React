@@ -3,12 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faLock,
-  faPencil,
-  faTractor,
-  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router";
-import PocketBase, { ClientResponseError } from "pocketbase";
+// import PocketBase, { ClientResponseError } from "pocketbase";
+import pb from "../../pb"
 
 export default function Login() {
   // CHECK IF USERNAME EXISTS IN 'users' COLLECTION - DONE
@@ -64,7 +62,7 @@ export default function Login() {
     }
 
     try {
-      const pb = new PocketBase("http://127.0.0.1:8090");
+      // const pb = new PocketBase("http://127.0.0.1:8090");
       const authData = await pb
         .collection("users")
         .authWithPassword(formData.username, formData.password);
@@ -74,11 +72,12 @@ export default function Login() {
     } catch (err) {
       if (err instanceof ClientResponseError && err.status === 400) {
         try {
-          const pb = new PocketBase("http://127.0.0.1:8090");
+          // const pb = new PocketBase("http://127.0.0.1:8090");
           // check if email exists
           const isEmailFound = await pb
             .collection("users")
             .getFirstListItem(`email="${formData.username}"`);
+          console.log("isFound", isEmailFound);
           setEmail((prev) => ({
             ...prev,
             errormsg: "Incorrect password",

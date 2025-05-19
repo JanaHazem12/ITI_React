@@ -3,37 +3,49 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router";
 import PocketBase from "pocketbase";
+import pb from "../../pb";
 
 export default function Home() {
   // SHOW EDIT/DELETE BUTTONS FOR BLOGS CREATED BY THE USER IN THE 'currently_logged_in' COLLECTION
-  const pb = new PocketBase("http://127.0.0.1:8090");
-  const authID = pb.authStore.record.id;
+  // ADD BLOG SHOULD BE THERE IF I'M LOGGED IN
+  // const pb = new PocketBase("http://127.0.0.1:8090");
+  const navigate = useNavigate();
+
+  const authID = pb.authStore.isValid ? pb.authStore.record.id : null;
   const [record, setRecord] = useState([]);
   const [blogCreator, setblogCreator] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
-  const [showButtons, setShowButtons] = useState(false);
+  const [isPostsFound, setPosts] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await pb.collection("blogs").getFullList({
+          sort: "-created",
+        });
+        console.log("BLOGS: ",result);
+        // NO POSTS
+        if(result.length == 0){
+          setPosts(true);
+        }
+        setRecord(result);
+      } catch (err) {
+        console.error("error fetching data", err);
+      }
+    };
+    fetchData();
+  }, []);
   const handleConfirm = () => {
-    // alert("Action Confirmed!");
     setModalOpen(false);
-    navigate("/");
+    // navigate("/");
+    // // CORRECT THIS
+    // window.location.reload();
   };
-  const navigate = useNavigate();
-
-  const handleDelete = () => {
-    // get the blog's id AND remove from DB
-  };
-
-  // const authName = pb.authStore.record.username;
-  // if (record.id === authID){
-  //   setShowButtons(true)
-  // } else{
-  //   setShowButtons(false)
-  // }
 
   const goToHomepage = async (id) => {
     setModalOpen(true);
     try {
-      const pb = new PocketBase("http://127.0.0.1:8090");
+      // const pb = new PocketBase("http://127.0.0.1:8090");
       const deleteBlog = await pb.collection("blogs").delete(id);
       navigate("/");
     } catch (err) {
@@ -46,27 +58,10 @@ export default function Home() {
     navigate(`/edit/${id}`, { state: { record: selectedBlog } });
   };
 
-  // useEffect(() => {
-  //   const blogCreatorName = async (id) => {
-  //     try {
-  //       const pb = new PocketBase("http://127.0.0.1:8090");
-  //       const getBlog = await pb.collection("blogs").getOne(id, {
-  //         expand: "creator",
-  //       });
-  //       const getBlogCreator = getBlog.expand.creator.username;
-  //       setblogCreator(getBlogCreator);
-  //       // console.log("HEREEE", blogCreator);
-  //     } catch (err) {
-  //       console.log("Error: ", err.data);
-  //     }
-  //   };
-
-  //   blogCreatorName(id);
-  // }, [id]);
-
   useEffect(() => {
+    console.log("bbbbbbbbb");
     const fetchBlogCreators = async () => {
-      const pb = new PocketBase("http://127.0.0.1:8090");
+      // const pb = new PocketBase("http://127.0.0.1:8090");
       const creators = {};
 
       for (const blog of record) {
@@ -86,21 +81,6 @@ export default function Home() {
     }
   }, [record]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const pb = new PocketBase("http://127.0.0.1:8090");
-        const result = await pb.collection("blogs").getFullList({
-          sort: "-created",
-        });
-        // const getID = await pb.collection("blogs").getFirstListItem({`id="${isRecord.id}"`})
-        setRecord(result);
-      } catch (error) {
-        console.error("error fetching data", error);
-      }
-    };
-    fetchData();
-  }, []);
   const Modal = ({ isOpen, onClose, children }) => {
     if (!isOpen) return null;
 
@@ -136,11 +116,8 @@ export default function Home() {
           >
             No, Keep it.
           </button>
-          <form onSubmit={handleDelete}>
-            <button
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              onClick={onConfirm}
-            >
+          <form>
+            <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
               Yes, Delete!
             </button>
           </form>
@@ -151,78 +128,62 @@ export default function Home() {
   return (
     <>
       <div className="mt-20 font-semibold">
-        <Link to="/add">
-          <button className="h-10 w-70 rounded-md bg-purple-600 cursor-pointer text-white hover:bg-cyan-400 hover:text-purple-600 hover:font-semibold">
-            Add Blog
-          </button>
-        </Link>
+        {authID && (
+          <Link to="/add">
+            <button className="h-10 w-70 rounded-md bg-purple-600 cursor-pointer text-white hover:bg-cyan-400 hover:text-white hover:font-semibold">
+              Add Blog
+            </button>
+          </Link>
+        )}
       </div>
       <br></br>
+        {isPostsFound && <div className="text-[50px] text-purple-500 flex items-center justify-center w-full min-h-screen font-serif">No blogs yet? Kick things off by creating your first post!</div>}
       <div className="w-full grid grid-cols-4 gap-4 bg-white">
-        {record.map((rec) => (
-          <div className="bg-white shadow-xl" key={rec.id}>
+        {!isPostsFound && record.map((rec) => (
+          <div className="hover:scale-105 duration-500 transition-transform bg-white shadow-xl" key={rec.id}>
             <img
               src={rec.image}
               alt={rec.title}
-              className="flex flex-col items-center justify-center inline-block object-cover w-[350px] h-[350px] p-[10px]"
+              className="flex flex-col items-center justify-center inline-block object-cover w-[350px] h-[350px]"
             />
             <div className="flex flex-col items-center justify-center">
-              <div className="font-light font-serif text-[18px] text-gray-600">
+              <div className="mt-5 font-bold font-serif text-[18px]">
                 {rec.title.toUpperCase()}
               </div>
-              {/* <div className="flex flex-row gap-2 items-center justify-center"> */}
-                {/* <div className="text-sm">
-                  {new Date(rec.created).toLocaleString()}
-                </div> */}
-                {/* {blogCreator[rec.id] && (
-                  <div className="text-red-400 font-bold">
-                    By: {blogCreator[rec.id]}
-                  </div>
-                )}
-              </div> */}
-              <div className="text-gray-700 font-light text-left px-4 py-4">
+              <div className="mt-2 h-[120px] text-gray-700 font-light text-center px-4 py-4 overflow-hidden transition-all duration-300 w-40 md:w-full hover:h-[200px] hover:overflow-y-auto hover:whitespace-normal">
                 {rec.body}
               </div>
             </div>
-            <hr className="text-gray-400"></hr>
-            <div className="text-sm">
-                  {new Date(rec.created).toLocaleString()}
+            {/* <hr className="text-gray-400"></hr> */}
+            <div className="flex flex-row gap-4 justify-between text-sm">
+              {blogCreator[rec.id] && (
+                <div className="text-purple-400 text-[17px] font-bold ml-4">
+                  {blogCreator[rec.id]}
                 </div>
-                <div className="flex flex-row gap-2 items-center justify-center">
-                {/* <div className="text-sm">
-                  {new Date(rec.created).toLocaleString()}
-                </div> */}
-                {blogCreator[rec.id] && (
-                  <div className="text-red-400 font-bold">
-                    By: {blogCreator[rec.id]}
-                  </div>
-                )}
+              )}
+              <div className="text-gray-400 text-[14px] font-semibold mr-2">
+                {new Date(rec.created).toLocaleString()}
+                {/* </div> */}
               </div>
-            <div className="float-end align-text-bottom">
-              {/* <Link to={`/edit/${rec.id}`}> */}
+            </div>
+            <div className="flex gap-2 justify-end items-end mt-auto">
               {rec.creator === authID && (
-                <button
-                  className="hover:bg-green-200"
-                  onClick={() => handleEdit(rec.id)}
-                >
+                <button onClick={() => handleEdit(rec.id)}>
                   <FontAwesomeIcon
                     icon={faPencil}
-                    className="text-gray-400 mr-2"
+                    className="text-purple-400 hover:text-purple-600"
                   />
                 </button>
               )}
-              {/* </Link> */}
-
               {rec.creator === authID && (
                 <button onClick={() => goToHomepage(rec.id)}>
                   <FontAwesomeIcon
                     icon={faTrash}
-                    className="text-gray-400 mr-2"
+                    className="text-red-400 mr-2 hover:text-red-600"
                   />
                 </button>
               )}
             </div>
-
             <ConfirmationModal
               isOpen={isModalOpen}
               onClose={() => setModalOpen(false)}
@@ -235,8 +196,7 @@ export default function Home() {
   );
 }
 
-
 // TODO:
 // LINE EPILIPSES ... in rec.body
-// refresh automatically when updating/deleting
+// DON'T reload when deleting
 // BLOG DESIGN
