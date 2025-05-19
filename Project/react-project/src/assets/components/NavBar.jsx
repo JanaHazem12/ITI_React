@@ -26,7 +26,7 @@ export default function NavBar() {
 
   return (
     <>
-      <div className="navbar bg-linear-to-r from-cyan-100 to-cyan-500 shadow-md text-purple-600  w-full fixed top-0 left-0">
+      <div className="navbar bg-linear-to-r from-cyan-100 to-cyan-500 shadow-md text-purple-600 w-full fixed top-0 left-0 z-50">
         <span className="hover:animate-spin bg-purple-100 px-4 py-2 rounded-lg mr-4 font-mono">
           PixelBlog
         </span>
@@ -60,16 +60,6 @@ export default function NavBar() {
         <div className="flex-none">
           <ul className="menu menu-horizontal px-1">
             <li className="hover:bg-purple-600 hover:text-white mr-2 active:scale-95 transition-transform active:!bg-purple-700 active:!text-white">
-              {/* {!isLoggedIn && (
-              <NavLink
-                className={({ isActive }) =>
-                  isActive ? "border border-purple-500" : ""
-                }
-                to="/login"
-              >
-                Login
-              </NavLink>
-            )} */}
               {!isLoggedIn ? (
                 <NavLink
                   className={({ isActive }) =>
@@ -90,18 +80,6 @@ export default function NavBar() {
                 </NavLink>
               )}
             </li>
-            {/* <li className="hover:bg-purple-600 hover:text-white mr-2 active:scale-95 transition-transform active:!bg-purple-700 active:!text-white">
-            {isLoggedIn && (
-              <NavLink
-                className={({ isActive }) =>
-                  isActive ? "border border-purple-500" : ""
-                }
-                onClick={handleLogOut}
-              >
-                Logout
-              </NavLink>
-            )}
-          </li> */}
             <li className="hover:bg-purple-600 hover:text-white mr-2 active:scale-95 transition-transform active:!bg-purple-700 active:!text-white">
               {!isLoggedIn && (
                 <NavLink

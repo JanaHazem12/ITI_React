@@ -114,12 +114,12 @@ export default function Home() {
           >
             No, Keep it.
           </button>
-            <button
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              onClick={onConfirm}
-            >
-              Yes, Delete!
-            </button>
+          <button
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            onClick={onConfirm}
+          >
+            Yes, Delete!
+          </button>
         </div>
       </Modal>
     );
@@ -127,36 +127,46 @@ export default function Home() {
   return (
     <>
       <div className="mt-20 font-semibold">
-        {authID ? ( 
+        {authID ? (
           <>
-          <p className="text-purple-600 text-lg mb-4">
-          Welcome back! Ready to share your next blog?
-        </p>
-          <Link to="/add">
-            <button className="h-10 w-70 rounded-md bg-purple-600 cursor-pointer text-white hover:bg-cyan-400 hover:text-white hover:font-semibold">
-              Add Blog
-            </button>
-          </Link></>
-        ): (<p className="text-purple-600 text-lg">
-          Want to share your own blog?{" "}
-          <Link to="/login" className="underline hover:text-cyan-400">
-            Log in
-          </Link>{" "}
-          or{" "}
-          <Link to="/register" className="underline hover:text-cyan-400">
-            sign up
-          </Link>{" "}
-          to get started!
-        </p>)}
+            <p className="text-purple-600 text-2xl mb-4">
+              Welcome back{" "}
+              <span className="ml-1 font-font1 text-purple-500 font-light">
+                {pb.authStore.record.username
+                  .split(" ", 1)
+                  .join("")
+                  .toUpperCase()}
+              </span>{" "}
+              ! <br></br>Ready to share your next blog?
+            </p>
+            <Link to="/add">
+              <button className="h-10 w-70 rounded-md bg-purple-600 cursor-pointer text-white hover:bg-cyan-400 hover:text-white hover:font-semibold">
+                Add Blog
+              </button>
+            </Link>
+          </>
+        ) : (
+          <p className="text-purple-600 text-2xl">
+            Want to share your own blog?{" "}
+            <Link to="/login" className="underline hover:text-cyan-400">
+              Log in
+            </Link>{" "}
+            or{" "}
+            <Link to="/register" className="underline hover:text-cyan-400">
+              sign up
+            </Link>{" "}
+            to get started!
+          </p>
+        )}
       </div>
-
+      <br></br>
       <br></br>
       {isPostsFound && (
         <div className="text-[50px] text-purple-500 flex items-center justify-center w-full min-h-screen font-serif">
           No blogs yet? Kick things off by creating your first post!
         </div>
       )}
-      <div className="w-full grid grid-cols-4 gap-4 bg-white">
+      <div className="w-full md:grid md:grid-cols-4 grid grid-cols-2 gap-4 bg-white">
         {!isPostsFound &&
           record.map((rec) => (
             <div
@@ -166,26 +176,34 @@ export default function Home() {
               <img
                 src={rec.image}
                 alt={rec.title}
-                className="flex flex-col items-center justify-center inline-block object-cover w-[350px] h-[350px]"
+                className="w-full h-48 object-cover"
               />
               <div className="flex flex-col items-center justify-center">
                 <div className="font-serif mt-5 text-[18px]">
                   {rec.title.toUpperCase()}
                 </div>
-                <div className="mt-2 h-[120px] truncate w-100 text-gray-500 font-light text-left px-4 py-4 overflow-hidden transition-all duration-300 w-40 md:w-full hover:h-[200px] hover:overflow-y-auto hover:whitespace-normal">
+                {/* hover:h-[200px] */}
+                <div className="mt-2 h-[120px] truncate w-full px-2 py-2 sm:px-4 sm:py-4 text-gray-500 font-light text-left overflow-hidden transition-all duration-300 hover:overflow-y-auto hover:whitespace-normal">
                   {rec.body}
                 </div>
               </div>
               {/* <hr className="text-gray-400"></hr> */}
               <div className="flex flex-row gap-4 justify-between text-sm">
                 {blogCreator[rec.id] && (
-                  <div className="text-purple-400 text-[17px] font-bold ml-4">
-                    {blogCreator[rec.id]}
+                  <div className="text-purple-400 text-sm sm:text-base font-bold ml-1 sm:ml-2">
+                    {/* MAKE THE 2ST LETTER UPPERCASE */}
+                    {blogCreator[rec.id]
+                      ? blogCreator[rec.id].charAt(0).toUpperCase() +
+                        blogCreator[rec.id].substring(1)
+                      : ""}
                   </div>
                 )}
-                <div className="text-gray-400 text-[14px] font-semibold mr-2">
-                  {new Date(rec.created).toLocaleString()}
-                  {/* </div> */}
+                <div className="text-slate-600 text-[10px] sm:text-sm font-semibold mr-1 sm:mr-2">
+                  {new Date(rec.created).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </div>
               </div>
               <div className="flex gap-2 justify-end items-end mt-auto">

@@ -95,7 +95,7 @@ export default function Register() {
     // validation for password/confirmPass if they DON'T match
     if (
       formData.password !== formData.confirmPass &&
-      formData.confirmPass.length >= 0
+      formData.confirmPass.length >= 0 && formData.confirmPass !== ""
     ) {
       setconfirmPassError("Passwords don't match!");
       isValid = false;
