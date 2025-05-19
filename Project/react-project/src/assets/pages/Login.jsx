@@ -5,7 +5,7 @@ import {
   faLock,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router";
-// import PocketBase, { ClientResponseError } from "pocketbase";
+import { ClientResponseError } from "pocketbase";
 import pb from "../../pb"
 
 export default function Login() {
@@ -119,16 +119,16 @@ export default function Login() {
                     value={formData.username}
                     onChange={handleChange}
                     name="username"
-                    placeholder="Email"
+                    placeholder="Username"
                     className="bg-transparent outline-none border-none focus:ring-0"
                   />
                 </div>
-                {requiredFields.usernamereq && (
+                {requiredFields.usernamereq && formData.username.length == 0 && (
                   <p className="text-red-600 text-left text-sm">
-                    Email is required.
+                    Email is required
                   </p>
                 )}
-                {!isEmailFound.emailExists && (
+                {!isEmailFound.emailExists && formData.username.length !== 0 && (
                   <p className="text-red-600 text-left text-sm">
                     {isEmailFound.errormsg}
                   </p>

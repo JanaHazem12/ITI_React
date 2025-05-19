@@ -14,7 +14,7 @@ export default function Home() {
   const [record, setRecord] = useState([]);
   const [blogCreator, setblogCreator] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
-  const [isPostsFound, setPosts] = useState(false);
+  const [isPostsFound, setNoPosts] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function Home() {
         console.log("BLOGS: ", result);
         // NO POSTS
         if (result.length == 0) {
-          setPosts(true);
+          setNoPosts(true);
         }
         setRecord(result);
       } catch (err) {
@@ -45,6 +45,7 @@ export default function Home() {
     if (!blogToDelete) return;
     try {
       await pb.collection("blogs").delete(blogToDelete);
+      // to avoid reloading the page when deleting a blog
       setRecord(record.filter((rec) => rec.id !== blogToDelete));
       setModalOpen(false);
       setBlogToDelete(null);
@@ -61,9 +62,7 @@ export default function Home() {
   useEffect(() => {
     console.log("bbbbbbbbb");
     const fetchBlogCreators = async () => {
-      // const pb = new PocketBase("http://127.0.0.1:8090");
       const creators = {};
-
       for (const blog of record) {
         try {
           const blogWithCreator = await pb.collection("blogs").getOne(blog.id, {
@@ -128,12 +127,16 @@ export default function Home() {
   return (
     <>
       <div className="mt-20 font-semibold">
-        {authID ? (
+        {authID ? ( 
+          <>
+          <p className="text-purple-600 text-lg mb-4">
+          Welcome back! Ready to share your next blog?
+        </p>
           <Link to="/add">
             <button className="h-10 w-70 rounded-md bg-purple-600 cursor-pointer text-white hover:bg-cyan-400 hover:text-white hover:font-semibold">
               Add Blog
             </button>
-          </Link>
+          </Link></>
         ): (<p className="text-purple-600 text-lg">
           Want to share your own blog?{" "}
           <Link to="/login" className="underline hover:text-cyan-400">
@@ -146,6 +149,7 @@ export default function Home() {
           to get started!
         </p>)}
       </div>
+
       <br></br>
       {isPostsFound && (
         <div className="text-[50px] text-purple-500 flex items-center justify-center w-full min-h-screen font-serif">
