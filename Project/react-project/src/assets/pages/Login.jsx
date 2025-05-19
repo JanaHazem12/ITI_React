@@ -67,7 +67,7 @@ export default function Login() {
         .collection("users")
         .authWithPassword(formData.username, formData.password);
       setEmail((prev) => ({ ...prev, errormsg: "", emailExists: true }));
-      console.log("AUTH DATA", authData);
+      // console.log("AUTH DATA", authData);
       navigate("/")
     } catch (err) {
       if (err instanceof ClientResponseError && err.status === 400) {
@@ -119,7 +119,7 @@ export default function Login() {
                     value={formData.username}
                     onChange={handleChange}
                     name="username"
-                    placeholder="Username"
+                    placeholder="Email"
                     className="bg-transparent outline-none border-none focus:ring-0"
                   />
                 </div>

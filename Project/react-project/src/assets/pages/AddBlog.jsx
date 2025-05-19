@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PocketBase from "pocketbase";
 import { useNavigate } from "react-router";
-import pb from "../../pb"
+import pb from "../../pb";
 
 export default function addBlog() {
   const [formData, setFormData] = useState({
@@ -47,8 +47,8 @@ export default function addBlog() {
     if (isValid) {
       try {
         // const pb = new PocketBase("http://127.0.0.1:8090");
-        const creator_id = pb.authStore.record.id
-        console.log("creator_id",creator_id);
+        const creator_id = pb.authStore.record.id;
+        console.log("creator_id", creator_id);
         const record = await pb.collection("blogs").create({
           title: formData.title,
           body: formData.body,
@@ -80,6 +80,7 @@ export default function addBlog() {
                 Title
               </label>
               <input
+                maxLength="40"
                 value={formData.title}
                 onChange={handleChange}
                 type="text"
@@ -97,6 +98,7 @@ export default function addBlog() {
                 Body
               </label>
               <textarea
+                maxLength="200"
                 value={formData.body}
                 onChange={handleChange}
                 rows="4"
