@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+  font-family: font1;
+  src: url(../public/assets/geDisplay-4neLW.otf);
+}
+@font-face {
+  font-family: font2;
+  src: url(../public/assets/RoastedBitter-DYR8d.ttf);
+}
+@font-face {
+  font-family: font3;
+  src: url(../public/assets/FastenDhectaDemoVersion-Zp8eJ.otf);
+}
+@font-face {
+  font-family: font4;
+  src: url(../public/assets/AnandaBlackPersonalUseRegular-rg9Rx.ttf);
+}
+@font-face {
+  font-family: font5;
+  src: url(../public/assets/Sweetchocolate-ow83d.ttf);
+}
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+}
+@theme {
+  --font-font1: font1, "sans-serif";
+  --font-font2: font2, "sans-serif";
+  --font-font3: font3, "sans-serif";
+  --font-font4: font4, "sans-serif";
+  --font-font5: font5, "sans-serif";
+}
