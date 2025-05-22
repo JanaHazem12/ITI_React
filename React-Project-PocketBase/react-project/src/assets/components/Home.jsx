@@ -24,31 +24,40 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await pb.collection("blogs").getList(page || 1, 2, {
+        const result = await pb.collection("blogs").getList(page, 5, {
           sort: "-created",
         });
+        // console.log("fetching page page no: ", page);
         // const blogsPerPage = result.items.length;
         // const totalBlogsCount = totalBlogs.length;
-        console.log("totalBlogs: ", result.totalItems);
+        // console.log("totalBlogs: ", result.totalItems);
         setTotalBlogs(result.totalItems);
-        console.log("blogs per page: ", result.perPage);
+        // console.log("blogs per page: ", result.perPage);
         setBlogsPerPage(result.perPage);
-        console.log("total pages: ", result.totalPages);
-        setPage(result.page);
+        // console.log("total pages: ", result.totalPages);
+        // setPage(result.page);
         setTotalPages(result.totalPages);
-        console.log("result page: ", result.page);
-        console.log("result items: ", result.items);
+        // console.log("result page: ", result.page);
+        // console.log("result items: ", result.items);
+        // setRecord(result.items);
+        setRecord([...result.items]);
         // NO POSTS
-        if (result.length == 0) {
+        if (result.items.length === 0) {
           setNoPosts(true);
+        } else {
+          setNoPosts(false);
         }
-        setRecord(result.items);
       } catch (err) {
         console.error("error fetching data", err);
       }
     };
     fetchData();
   }, [page]);
+
+  const handlePageClick = (newPage) => {
+    setPage(newPage);
+    navigate(`/${newPage}`);
+  };
 
   const openDeleteModal = (id) => {
     setBlogToDelete(id);
@@ -72,28 +81,6 @@ export default function Home() {
     const selectedBlog = record.find((rec) => rec.id === id);
     navigate(`/edit/${id}`, { state: { record: selectedBlog } });
   };
-
-  // const handlePageClick = async (index) => {
-  //   // THE PAGES GET THE CORRECT DATA BUT HOW DO I RENDER AGAIN IN ORDER TO VIEW THE DATA
-  //   try{
-  //     const result = await pb.collection("blogs").getList(index, 2, {
-  //         sort: "-created",
-  //       });
-  //       console.log("RESULT: ", result.items); 
-  //       // fetchData(index)
-  //       setRecord(result.items);
-  //       navigate(`/${index}`);
-  //   } catch(err) {
-  //     console.error("error fetching data", err);
-  // }
-  //   // `/${(index-1) * perPage}`
-  // }
-
-  const handlePageClick = (index) => {
-    page = index;
-    console.log("I'M HERE!!");
-    navigate(`/${index}`);
-  }
 
   useEffect(() => {
     // console.log("bbbbbbbbb");
@@ -160,6 +147,23 @@ export default function Home() {
       </Modal>
     );
   };
+
+  // const pageButton = ({ number, currentPage, onClick }) => {
+  //   console.log("PAGE BUTTON:");
+  //   return (
+  //     <button
+  //       className={`px-4 py-2 rounded-lg ${
+  //         currentPage === number
+  //           ? "bg-blue-500 text-white"
+  //           : "bg-gray-200 text-gray-700 hover:bg-red-500"
+  //       }`}
+  //       onClick={onClick}
+  //     >
+  //       {number}
+  //     </button>
+  //   );
+  // };
+
   return (
     <>
       <div className="mt-20 font-semibold">
@@ -202,70 +206,71 @@ export default function Home() {
           No blogs yet? Kick things off by creating your first post!
         </div>
       )}
-      <div className="w-full md:grid md:grid-cols-4 grid grid-cols-2 gap-4 bg-white">
-        {!isPostsFound &&
-          record.map((rec) => (
-            <div
-              className="hover:scale-105 duration-500 transition-transform bg-white shadow-xl"
-              key={rec.id}
-            >
-              <img
-                src={rec.image}
-                alt={rec.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="flex flex-col items-center justify-center">
-                <div className="font-serif mt-5 text-[18px]">
-                  {rec.title.toUpperCase()}
-                </div>
-                {/* hover:h-[200px] */}
-                <div className="mt-2 h-[120px] truncate w-full px-2 py-2 sm:px-4 sm:py-4 text-gray-500 font-light text-left overflow-hidden transition-all duration-300 hover:overflow-y-auto hover:whitespace-normal">
-                  {rec.body}
-                </div>
+      <div className="w-full md:grid md:grid-cols-3 grid grid-cols-2 gap-4 bg-white">
+        {/* {!isPostsFound && */}
+        {record.map((rec) => (
+          <div
+            className="hover:scale-105 duration-500 transition-transform bg-white shadow-xl"
+            key={rec.id}
+          >
+            <img
+              src={rec.image}
+              alt={rec.title}
+              className="w-full h-48 object-cover"
+            />
+            <div className="flex flex-col items-center justify-center">
+              <div className="font-serif mt-5 text-[18px]">
+                {rec.title.toUpperCase()}
               </div>
-              {/* <hr className="text-gray-400"></hr> */}
-              <div className="px-4 py-6 flex flex-row gap-4 justify-between text-sm">
-                {blogCreator[rec.id] && (
-                  <div className="text-purple-400 text-sm sm:text-base font-bold ml-1 sm:ml-2">
-                    {/* MAKE THE 2ST LETTER UPPERCASE */}
-                    <FontAwesomeIcon
-                      icon={faUser}
-                      className="text-slate-600 sm:mr-1 text-[12px] sm:text-[15px] sm:mb-0.5"
-                    />
-                    {blogCreator[rec.id]
-                      ? blogCreator[rec.id].charAt(0).toUpperCase() +
-                        blogCreator[rec.id].substring(1)
-                      : ""}
-                  </div>
-                )}
-                <div className="text-slate-600 text-[10px] sm:text-sm font-semibold mr-1 sm:mr-2">
-                  {new Date(rec.created).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </div>
-              </div>
-              <div className="flex gap-2 justify-end items-end mt-auto">
-                {rec.creator === authID && (
-                  <button onClick={() => handleEdit(rec.id)}>
-                    <FontAwesomeIcon
-                      icon={faPencil}
-                      className="text-purple-400 hover:text-purple-600"
-                    />
-                  </button>
-                )}
-                {rec.creator === authID && (
-                  <button onClick={() => openDeleteModal(rec.id)}>
-                    <FontAwesomeIcon
-                      icon={faTrash}
-                      className="text-red-400 mr-2 hover:text-red-600"
-                    />
-                  </button>
-                )}
+              {/* hover:h-[200px] */}
+              <div className="mt-2 h-[120px] truncate w-full px-2 py-2 sm:px-4 sm:py-4 text-gray-500 font-light text-left overflow-hidden transition-all duration-300 hover:overflow-y-auto hover:whitespace-normal">
+                {rec.body}
               </div>
             </div>
-          ))}
+            {/* <hr className="text-gray-400"></hr> */}
+            <div className="px-4 py-6 flex flex-row gap-4 justify-between text-sm">
+              {blogCreator[rec.id] && (
+                <div className="text-purple-400 text-sm sm:text-base font-bold ml-1 sm:ml-2">
+                  {/* MAKE THE 2ST LETTER UPPERCASE */}
+                  <FontAwesomeIcon
+                    icon={faUser}
+                    className="text-slate-600 sm:mr-1 text-[12px] sm:text-[15px] sm:mb-0.5"
+                  />
+                  {blogCreator[rec.id]
+                    ? blogCreator[rec.id].charAt(0).toUpperCase() +
+                      blogCreator[rec.id].substring(1)
+                    : ""}
+                </div>
+              )}
+              <div className="text-slate-600 text-[10px] sm:text-sm font-semibold mr-1 sm:mr-2">
+                {new Date(rec.created).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end items-end mt-auto">
+              {rec.creator === authID && (
+                <button onClick={() => handleEdit(rec.id)}>
+                  <FontAwesomeIcon
+                    icon={faPencil}
+                    className="text-purple-400 hover:text-purple-600"
+                  />
+                </button>
+              )}
+              {rec.creator === authID && (
+                <button onClick={() => openDeleteModal(rec.id)}>
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="text-red-400 mr-2 hover:text-red-600"
+                  />
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        {/* } */}
         <ConfirmationModal
           isOpen={isModalOpen}
           onClose={() => {
@@ -276,11 +281,15 @@ export default function Home() {
         />
       </div>
       <br />
-      <ul className="flex justify-center gap-1 text-gray-900">
+      <ul className="flex justify-center gap-1">
         <li>
           <a
-            href="#"
-            className="grid size-8 place-content-center rounded border border-gray-200 transition-colors hover:bg-gray-50 rtl:rotate-180"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick(page - 1);
+            }}
+            className="grid size-8 place-content-center rounded border border-gray-200 transition-colors hover:bg-blue-200 rtl:rotate-180"
+            
             aria-label="Previous page"
           >
             <svg
@@ -298,19 +307,24 @@ export default function Home() {
           </a>
         </li>
 
-        {Array.from({ length: totalPages},(_, index) => (
-          <li>
+        {Array.from({ length: totalPages }, (_, index) => (
+          <li key={index}>
             <a
               // href={() => handlePageClick(page, perPage)}
               onClick={(e) => {
                 e.preventDefault();
-                handlePageClick(page+1);
+                handlePageClick(index + 1);
+                // console.log("PAGE: ", index+1);
               }}
               // bg-indigo-600 border border-indigo-600
-              className="block size-8 rounded border border-gray-200 text-center text-sm/8 font-medium transition-colors hover:bg-gray-50"
-              key={index}
+              // className="block size-8 rounded border border-gray-200 text-center text-sm/8 font-medium transition-colors hover:bg-gray-50"
+              className={`block size-8 rounded border border-gray-200 text-center text-sm/8 font-medium ${
+                page === index + 1
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "hover:bg-blue-200 text-gray-700"
+              }`}
             >
-              {index+1}
+              {index + 1}
               {/* {console.log("RECORD PAGE: ",totalBlogs)} */}
             </a>
           </li>
@@ -321,8 +335,11 @@ export default function Home() {
 
         <li>
           <a
-            href="#"
-            className="grid size-8 place-content-center rounded border border-gray-200 transition-colors hover:bg-gray-50 rtl:rotate-180"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick(page + 1);
+            }}
+            className="grid size-8 place-content-center rounded border border-gray-200 transition-colors hover:bg-blue-200 rtl:rotate-180"
             aria-label="Next page"
           >
             <svg

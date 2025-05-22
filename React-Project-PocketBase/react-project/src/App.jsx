@@ -22,6 +22,8 @@ function App() {
         <NavBar></NavBar>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/:page?" element={<Home />} />
+          {/* FOR PAGINATION ^^ */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/add" element={<AddBlog />} />
